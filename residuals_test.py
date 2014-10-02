@@ -68,7 +68,12 @@ class TestInterpolation(unittest.TestCase):
         expected_thetas = [45]*360
         expected_thetas[0] = np.degrees(np.arctan2(1,2))
         rs_out, thetas_out = translate(rs_in, dx, dy, dtheta)
-        print thetas_out
+        self.assertTrue(self.matrices_equal(rs_out,rs_expected))
+        self.assertTrue(self.matrices_equal(thetas_out,expected_thetas))
+
+        dx,dy,dtheta = 1,1,90
+        expected_thetas = [e+90 for e in expected_thetas]
+        rs_out, thetas_out = translate(rs_in, dx, dy, dtheta)
         self.assertTrue(self.matrices_equal(rs_out,rs_expected))
         self.assertTrue(self.matrices_equal(thetas_out,expected_thetas))
 
