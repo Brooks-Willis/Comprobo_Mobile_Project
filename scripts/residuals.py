@@ -6,7 +6,7 @@ def makeFunc(r1,r2):
 def wrapInterp(val,interpArray):
 	floor = int(np.floor(val))
 	delta = val-floor
-	return interpArray[floor](delta)
+	return interpArray[np.mod(floor,len(interpArray))](delta)
 
 def interpaLazers(lazerData):
 	#assume array goes 1-360
@@ -26,7 +26,7 @@ def rotate_cart(x,y,cost,sint):
 	return (cost*x-sint*y, sint*x+cost*y)
 
 def translate(rs_in, dx, dy, dtheta):
-	'''takes a rotation/translation to perform, not the rotation we think the robot made'''
+	'''rotates and translates the WORLD, not the robot'''
 	rs_in = [r+1e-6 if r==0 else r for r in rs_in]
 	cart = [cartesian(r,theta) for theta, r in enumerate(rs_in)]
 	translation = [(x + dx, y + dy) for x, y in cart]
@@ -37,6 +37,13 @@ def translate(rs_in, dx, dy, dtheta):
 	thetas = [np.degrees(np.arctan2(y,x)) for x,y in rotation]
 	thetas = [360+t if t<0 else t for t in thetas]
 	return rs, thetas
+
+def residual(old,new,dx,dy,dtheta):
+	new_rs, new_thetas = translate(new,dx,dy,dtheta)
+	print "\n\n"
+	print new_rs
+	print new_thetas
+	return computeResidual(old, new_rs, new_thetas)
 
 if __name__ == "__main__":
 	pass
