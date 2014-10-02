@@ -1,6 +1,6 @@
 import unittest
 import numpy
-from residuals import makeFunc, wrapInterp, interpaLazers, computeResidual, translate
+from residuals import makeFunc, wrapInterp, interpaLazers, computeResidual, translate, cartesian, rotate_cart
 
 
 class TestInterpolation(unittest.TestCase):
@@ -33,11 +33,31 @@ class TestInterpolation(unittest.TestCase):
         new[0] = 0
         self.assertEqual(computeResidual(old,new,new_thetas),0.5)
 
+    def matrices_equal(self, array1, array2):
+        return numpy.allclose(array1, array2, atol=1e-03)
+
+    def test_cartesian(self):
+        self.assertTrue(cartesian(1,0),(0,1))
+        self.assertTrue(cartesian(1,90),(1,0))
+        self.assertTrue(cartesian(1,180),(0,-1))
+        self.assertTrue(cartesian(1,270),(-1,0))
+        self.assertTrue(cartesian(1,360),(0,1))
+
+    def test_rotate_cart(self):
+        self.assertTrue(rotate_cart(0,1,1,0),(1,0))
+
     def test_translate(self):
-        new = range(360)
+        #breaks on 0
+        rs_in = range(1,361)
+        thetas_in = range(360)
         dx, dy, dtheta = 0,0,90
-        expected = new[270:]+new[:270]
-        self.assertEqual(translate(new, dx, dy, dtheta),(expected,new))
+        expected_thetas = thetas_in[270:]+thetas_in[:270]
+        rs_out, thetas_out = translate(rs_in, dx, dy, dtheta)
+        print thetas_out
+        # print expected_thetas
+        self.assertTrue(self.matrices_equal(rs_out,rs_in))
+        self.assertTrue(self.matrices_equal(thetas_out,expected_thetas))
+
 
 if __name__ == '__main__':
     unittest.main()

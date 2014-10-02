@@ -19,14 +19,22 @@ def computeResidual(old, new, new_thetas):
 	oldInterped = [oldInterpFunc(theta) for theta in new_thetas]	
 	return abs(sum([o-n for o,n in zip(oldInterped,new)]))
 
+def cartesian(r,theta):
+	return (r * np.cos(np.radians(theta)), r * np.sin(np.radians(theta)))
+
+def rotate_cart(x,y,cost,sint):
+	return (cost*x+sint*y, -1*sint*x+cost*y)
+
 def translate(new, dx, dy, dtheta):
-	cartesian = [(r * np.cos(np.radians(theta)), r * np.sin(np.radians(theta))) for theta, r in enumerate(new)]
-	translation = [(x - dx, y - dy) for x, y in cartesian]
-	st = np.sin(np.radians(-1*dtheta))
-	ct = np.cos(np.radians(-1*dtheta))
-	rotation = [(ct*x+st*y, -1*st*x+ct*y) for x,y in translation]
-	temp = [(np.sqrt(x**2+y**2), np.degrees(np.arctan(x/y))) for x,y in rotation]
-	rs, thetas = zip(*temp)
+	'''takes a rotation/translation to perform, not the rotation we think the robot made'''
+	cart = [cartesian(r,theta) for theta, r in enumerate(new)]
+	translation = [(x + dx, y + dy) for x, y in cart]
+	st = np.sin(np.radians(dtheta))
+	ct = np.cos(np.radians(dtheta))
+	rotation = [rotate_cart(x,y,ct,st) for x,y in translation]
+	rs = [np.sqrt(x**2+y**2) for x,y in rotation]
+	thetas = [np.degrees(np.arctan2(y,x)) for x,y in rotation]
+	thetas = [360+t if t<0 else t for t in thetas]
 	return rs, thetas
 
 if __name__ == "__main__":
