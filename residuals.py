@@ -17,17 +17,18 @@ def interpaLazers(lazerData):
 def computeResidual(old, new, new_thetas):
 	oldInterpFunc = interpaLazers(old)
 	oldInterped = [oldInterpFunc(theta) for theta in new_thetas]	
-	return abs(sum([o-n for o,n in zip(oldInterped,new)]))
+	return sum([o-n for o,n in zip(oldInterped,new)])**2
 
 def cartesian(r,theta):
 	return (r * np.cos(np.radians(theta)), r * np.sin(np.radians(theta)))
 
 def rotate_cart(x,y,cost,sint):
-	return (cost*x+sint*y, -1*sint*x+cost*y)
+	return (cost*x-sint*y, sint*x+cost*y)
 
-def translate(new, dx, dy, dtheta):
+def translate(rs_in, dx, dy, dtheta):
 	'''takes a rotation/translation to perform, not the rotation we think the robot made'''
-	cart = [cartesian(r,theta) for theta, r in enumerate(new)]
+	rs_in = [r+1e-6 if r==0 else r for r in rs_in]
+	cart = [cartesian(r,theta) for theta, r in enumerate(rs_in)]
 	translation = [(x + dx, y + dy) for x, y in cart]
 	st = np.sin(np.radians(dtheta))
 	ct = np.cos(np.radians(dtheta))
