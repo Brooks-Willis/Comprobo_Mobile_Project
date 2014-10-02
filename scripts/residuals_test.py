@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from residuals import makeFunc, wrapInterp, interpaLazers, computeResidual, translate, cartesian, rotate_cart
+from residuals import makeFunc, wrapInterp, interpaLazers, computeResidual, translate, cartesian, rotate_cart, residual
 
 
 class TestInterpolation(unittest.TestCase):
@@ -18,6 +18,7 @@ class TestInterpolation(unittest.TestCase):
     	interpArray=[self.dummyFunc1, self.dummyFunc2]
     	self.assertEqual(wrapInterp(0.3, interpArray), 1.3)
     	self.assertEqual(wrapInterp(1.3, interpArray), 4.3)
+        self.assertEqual(wrapInterp(3.3, interpArray),4.3)
 
     def test_interpaLazers(self):
         interp = interpaLazers(range(360))
@@ -32,6 +33,10 @@ class TestInterpolation(unittest.TestCase):
         self.assertEqual(computeResidual(old,new,new_thetas),0)
         new[0] = 0
         self.assertEqual(computeResidual(old,new,new_thetas),0.25)
+
+        new = range(360)
+        new = new[90:]+new[:90]
+        self.assertEqual(computeResidual(old,new,new),0)
 
     def matrices_equal(self, array1, array2):
         return np.allclose(array1, array2, atol=1e-03)
@@ -55,8 +60,6 @@ class TestInterpolation(unittest.TestCase):
         dx, dy, dtheta = 0,0,90
         expected_thetas = thetas_in[90:]+thetas_in[:90]
         rs_out, thetas_out = translate(rs_in, dx, dy, dtheta)
-        print thetas_out
-        print expected_thetas
         self.assertTrue(self.matrices_equal(rs_out,rs_in))
         self.assertTrue(self.matrices_equal(thetas_out,expected_thetas))
 
@@ -76,6 +79,21 @@ class TestInterpolation(unittest.TestCase):
         rs_out, thetas_out = translate(rs_in, dx, dy, dtheta)
         self.assertTrue(self.matrices_equal(rs_out,rs_expected))
         self.assertTrue(self.matrices_equal(thetas_out,expected_thetas))
+
+    def test_residual(self):
+        old = range(1,361)
+        new = range(1,361)
+        self.assertAlmostEqual(residual(old,new,0,0,0),0)
+
+        old = range(1,361)
+        new2 = range(1,361)
+        new2 = new2[90:]+new2[:90]
+        self.assertAlmostEqual(residual(old,new2,0,0,90),0)
+        self.assertFalse(residual(old,new2,0,0,0)==0)
+
+        old = range(1,361)
+        new2[0] = 1
+        self.assertAlmostEqual(residual(old,new2,0,0,90),90**2)
 
 
 if __name__ == '__main__':
