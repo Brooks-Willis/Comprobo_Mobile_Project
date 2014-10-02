@@ -1,6 +1,6 @@
 import unittest
 import numpy
-from residuals import makeFunc, wrapInterp, interpaLazers, computeResidual
+from residuals import makeFunc, wrapInterp, interpaLazers, computeResidual, translate
 
 
 class TestInterpolation(unittest.TestCase):
@@ -32,6 +32,12 @@ class TestInterpolation(unittest.TestCase):
         self.assertEqual(computeResidual(old,new,new_thetas),0)
         new[0] = 0
         self.assertEqual(computeResidual(old,new,new_thetas),0.5)
+
+    def test_translate(self):
+        new = range(360)
+        dx, dy, dtheta = 0,0,90
+        expected = new[270:]+new[:270]
+        self.assertEqual(translate(new, dx, dy, dtheta),(expected,new))
 
 if __name__ == '__main__':
     unittest.main()
