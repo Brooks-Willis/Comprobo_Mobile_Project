@@ -89,6 +89,7 @@ class TestInterpolation(unittest.TestCase):
         new2 = range(1,361)
         new2 = new2[90:]+new2[:90]
         self.assertAlmostEqual(residual(old,new2,0,0,90),0)
+        self.assertFalse(residual(old,new2,0,0,0)==0)
 
         old = range(1,361)
         new2[0] = 1
