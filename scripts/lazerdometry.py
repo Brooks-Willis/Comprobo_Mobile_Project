@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import numpy as np
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
@@ -31,10 +32,12 @@ class Odom(object):
 		self.deltas = np.array([[0],[0],[0]]) #dx, dy, dtheta
 
 	def quat_distance(self, new_quat, old_quat):
+		print new_quat
+		print old_quat
 		sign = np.sign(new_quat.z-old_quat.z)
 		new_quat = np.array([new_quat.x, new_quat.y, new_quat.z, new_quat.w])
 		old_quat = np.array([old_quat.x, old_quat.y, old_quat.z, old_quat.w])
-		dtheta = np.arccos(2 * np.dot(new_quat, old_quat) - 1)
+		dtheta = np.arccos(2 * np.dot(new_quat.T, old_quat) - 1)
 		return sign*np.degrees(dtheta)
 
 	def odom_received(self, data):

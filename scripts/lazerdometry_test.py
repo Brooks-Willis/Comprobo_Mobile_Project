@@ -1,7 +1,8 @@
 import unittest
 import numpy as np
-from lazerdometry import Lazer
+from lazerdometry import Lazer, Odom
 from mock import MagicMock
+from geometry_msgs.msg import Quaternion
 
 
 class TestLazer(unittest.TestCase):
@@ -43,5 +44,23 @@ class TestLazer(unittest.TestCase):
 
 class TestOdom(unittest.TestCase):
 
+	def setUp(self):
+		self.odom = Odom()
+
+	def make_quat(self,z,w):
+		q = np.array([z,w])
+		q = q/np.linalg.norm(q)
+
+		quat = Quaternion(x=0,y=0,z=q[0],w=q[1])
+
+		return quat
+
+	def test_quat_distance(self):
+		q1 = self.make_quat(0,1)
+		q2 = self.make_quat(1,1)
+
+		self.assertEqual(self.odom.quat_distance(q2,q1),np.degrees(1))
+
+		
 	
 
