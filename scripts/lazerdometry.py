@@ -34,19 +34,19 @@ class Odom(object):
         self.new_odom = None
         self.deltas = np.array([[0], [0], [0]])  # dx, dy, dtheta
 
-	def odom_received(self, data):
-		self.old_odom = self.new_odom
-		self.new_odom = data
-		if self.old_odom != None:
-			self.deltas[(0,0)] = (
+    def odom_received(self, data):
+        self.old_odom = self.new_odom
+        self.new_odom = data
+        if self.old_odom != None:
+            self.deltas[(0,0)] = (
                 self.new_odom.pose.position.x - self.old_odom.pose.position.x
             )
-			self.deltas[(1,0)] = (
+            self.deltas[(1,0)] = (
                 self.new_odom.pose.position.y - self.old_odom.pose.position.y
             )
-			new_quat = self.new_odom.pose.orientation
-			old_quat = self.old_odom.pose.orientation
-			self.deltas[(2,0)] = new_quat.angle(old_quat)
+            new_quat = self.new_odom.pose.orientation
+            old_quat = self.old_odom.pose.orientation
+            self.deltas[(2,0)] = new_quat.angle(old_quat)
 
     def get_deltas(self):
         return np.array(self.deltas)
@@ -62,6 +62,6 @@ class Lazerdom(object):
 
 if __name__ == '__main__':
     try:
-        pass
+        laughs = Odom()
     except rospy.ROSInterruptException:
         pass
