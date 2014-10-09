@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import tf
-from lazerdometry import Lazer, Odom
+from lazerdometry import Lazer, Odom, Lazerdom
 from mock import MagicMock
 from geometry_msgs.msg import Quaternion
 
@@ -57,24 +57,88 @@ class TestOdom(unittest.TestCase):
 
     def test_odom_received(self):
         odom1 = MagicMock()
-        odom1.pose.position.x.return_value = 0
-        odom1.pose.position.y.return_value = 0
-        odom1.pose.orientation.x.return_value = self.make_quat(0,1)
+        odom1.pose.position.x = 0
+        odom1.pose.position.y = 0
+        odom1.pose.orientation.x = self.make_quat(0,1)
 
         odom2 = MagicMock()
-        odom2.pose.position.x.return_value = 0
-        odom2.pose.position.y.return_value = 0
-        odom2.pose.orientation.x.return_value = self.make_quat(1,1)
+        odom2.pose.position.x = 0
+        odom2.pose.position.y = 0
+        odom2.pose.orientation.x = self.make_quat(1,1)
 
         self.odom.odom_received(odom1)
 
-        self.assertEqual(self.odom.old_odom,None)
+        self.assertEqual(self.odom.old_odom,odom1)
         self.assertEqual(self.odom.new_odom,odom1)
-        self.assertTrue(np.array_equal(self.odom.deltas,np.array([[0],[0],[0]])))
 
         self.odom.odom_received(odom2)
 
         self.assertEqual(self.odom.old_odom,odom1)
         self.assertEqual(self.odom.new_odom,odom2)
-        temp = self.odom.old_odom.pose.position.x
-        self.assertTrue(np.array_equal(self.odom.deltas,np.array([[0],[0],[90]])))
+
+    def test_deltas(self):
+        odom1 = MagicMock()
+        odom1.pose.position.x = 0
+        odom1.pose.position.y = 0
+        odom1.pose.orientation = self.make_quat(0,1)
+
+        odom2 = MagicMock()
+        odom2.pose.position.x = 0
+        odom2.pose.position.y = 0
+        odom2.pose.orientation = self.make_quat(1,1)
+
+        self.odom.old_odom = odom1
+        self.odom.new_odom = odom1
+
+        self.assertTrue(np.array_equal(self.odom.deltas(),np.array([[0],[0],[0]])))
+
+        self.odom.new_odom = odom2
+
+        self.assertTrue(np.array_equal(self.odom.deltas(),np.array([[0],[0],[90]])))
+
+    def test_get_deltas(self):
+        odom1 = MagicMock()
+        odom1.pose.position.x = 0
+        odom1.pose.position.y = 0
+        odom1.pose.orientation = self.make_quat(0,1)
+
+        odom2 = MagicMock()
+        odom2.pose.position.x = 0
+        odom2.pose.position.y = 0
+        odom2.pose.orientation = self.make_quat(1,1)
+
+        self.odom.new_odom = odom2
+        self.odom.old_odom = odom1
+
+        dels = self.odom.get_deltas()
+
+        self.assertEqual(self.odom.old_odom,odom2)
+        self.assertTrue(np.array_equal(dels,np.array([[0],[0],[90]])))
+
+
+class TestLazerdom(unittest.TestCase):
+    def setUp(self):
+        self.lazerdom = Lazerdom()
+
+    def make_quat(self, z, w):
+        q = np.array([z, w])
+        q = q/np.linalg.norm(q)
+
+        quat = (0, 0, q[0], q[1])
+
+        return quat
+
+    def test_compute_new_pose(self):
+        actual_del = np.array([[1],[2],[90]])
+
+        self.lazerdom.compute_new_pose(actual_del)
+
+        self.assertTrue(np.allclose(self.lazerdom.current_quat,self.make_quat(1,1)))
+        self.assertEqual(self.lazerdom.current_pos,[1,2,0])
+
+        actual_del = np.array([[1],[2],[-90]])
+
+        self.lazerdom.compute_new_pose(actual_del)
+
+        self.assertTrue(np.allclose(self.lazerdom.current_quat,self.make_quat(0,1)))
+        self.assertEqual(self.lazerdom.current_pos,[2,4,0])
