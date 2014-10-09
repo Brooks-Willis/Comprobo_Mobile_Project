@@ -23,5 +23,6 @@ def gradient_descent(func, v):
 
     return v_new
 
+
 def make_column_vector(v):
     return v.reshape(v.shape[0], -1)
