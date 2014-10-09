@@ -23,10 +23,14 @@ class Lazer(object):
         self.ultimate = data.ranges
 
     def get_old_scan(self):
-        return list(self.penultimate)
+        if self.penultimate != None:
+            return list(self.penultimate)
+        return None
 
     def get_new_scan(self):
-        return list(self.ultimate)
+        if self.ultimate != None:
+            return list(self.ultimate)
+        return None
 
 
 class Odom(object):
@@ -37,22 +41,25 @@ class Odom(object):
           # dx, dy, dtheta
 
     def deltas(self):
+        if not (self.old_odom and self.new_odom):
+            return None
+
         out = np.array([[0], [0], [0]])
 
         out[0,0] += (
-            self.new_odom.pose.position.x - self.old_odom.pose.position.x
+            self.new_odom.pose.pose.position.x - self.old_odom.pose.pose.position.x
         )
         out[1,0] += (
-            self.new_odom.pose.position.y - self.old_odom.pose.position.y
+            self.new_odom.pose.pose.position.y - self.old_odom.pose.pose.position.y
         )
-        new_quat = (self.new_odom.pose.orientation.x,
-            self.new_odom.pose.orientation.y,
-            self.new_odom.pose.orientation.z,
-            self.new_odom.pose.orientation.w)
-        old_quat = (self.old_odom.pose.orientation.x,
-            self.old_odom.pose.orientation.y,
-            self.old_odom.pose.orientation.z,
-            self.old_odom.pose.orientation.w)
+        new_quat = (self.new_odom.pose.pose.orientation.x,
+            self.new_odom.pose.pose.orientation.y,
+            self.new_odom.pose.pose.orientation.z,
+            self.new_odom.pose.pose.orientation.w)
+        old_quat = (self.old_odom.pose.pose.orientation.x,
+            self.old_odom.pose.pose.orientation.y,
+            self.old_odom.pose.pose.orientation.z,
+            self.old_odom.pose.pose.orientation.w)
         new_yaw = tf.transformations.euler_from_quaternion(new_quat)[2]
         old_yaw = tf.transformations.euler_from_quaternion(old_quat)[2]
         out[2,0] += np.degrees(new_yaw-old_yaw)
@@ -114,22 +121,24 @@ class Lazerdom(object):
         r = rospy.Rate(5)
         while not(rospy.is_shutdown()):
 
-            old = self.lazer_sub.get_old_scan
-            new = self.lazer_sub.get_new_scan
-            guess_del = self.odom_sub.get_deltas
+            old = self.lazer_sub.get_old_scan()
+            new = self.lazer_sub.get_new_scan()
+            guess_del = self.odom_sub.get_deltas()
 
-            res_func = lambda vect: rsd.residual(old,new,vect[0,0],vect[1,0],vect[2,0])
+            if old != None and new != None and guess_del != None:
+                res_func = lambda vect: rsd.residual(old,new,vect[0,0],vect[1,0],vect[2,0])
 
-            actual_del = grd.gradient_descent(res_func,guess_del)
+                actual_del = grd.gradient_descent(res_func,guess_del)
 
-            self.compute_new_pose(actual_del)
-            self.publish_pose()
+                self.compute_new_pose(actual_del)
+                self.publish_pose()
             r.sleep()
 
 
 
 if __name__ == '__main__':
     try:
-        pass
+        lazerdom = Lazerdom()
+        lazerdom.execute()
     except rospy.ROSInterruptException:
         pass

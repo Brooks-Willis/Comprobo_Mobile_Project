@@ -57,14 +57,14 @@ class TestOdom(unittest.TestCase):
 
     def test_odom_received(self):
         odom1 = MagicMock()
-        odom1.pose.position.x = 0
-        odom1.pose.position.y = 0
-        odom1.pose.orientation.x = self.make_quat(0,1)
+        odom1.pose.pose.position.x = 0
+        odom1.pose.pose.position.y = 0
+        odom1.pose.pose.orientation.x = self.make_quat(0,1)
 
         odom2 = MagicMock()
-        odom2.pose.position.x = 0
-        odom2.pose.position.y = 0
-        odom2.pose.orientation.x = self.make_quat(1,1)
+        odom2.pose.pose.position.x = 0
+        odom2.pose.pose.position.y = 0
+        odom2.pose.pose.orientation.x = self.make_quat(1,1)
 
         self.odom.odom_received(odom1)
 
@@ -78,14 +78,14 @@ class TestOdom(unittest.TestCase):
 
     def test_deltas(self):
         odom1 = MagicMock()
-        odom1.pose.position.x = 0
-        odom1.pose.position.y = 0
-        odom1.pose.orientation = self.make_quat(0,1)
+        odom1.pose.pose.position.x = 0
+        odom1.pose.pose.position.y = 0
+        odom1.pose.pose.orientation = self.make_quat(0,1)
 
         odom2 = MagicMock()
-        odom2.pose.position.x = 0
-        odom2.pose.position.y = 0
-        odom2.pose.orientation = self.make_quat(1,1)
+        odom2.pose.pose.position.x = 0
+        odom2.pose.pose.position.y = 0
+        odom2.pose.pose.orientation = self.make_quat(1,1)
 
         self.odom.old_odom = odom1
         self.odom.new_odom = odom1
@@ -98,14 +98,14 @@ class TestOdom(unittest.TestCase):
 
     def test_get_deltas(self):
         odom1 = MagicMock()
-        odom1.pose.position.x = 0
-        odom1.pose.position.y = 0
-        odom1.pose.orientation = self.make_quat(0,1)
+        odom1.pose.pose.position.x = 0
+        odom1.pose.pose.position.y = 0
+        odom1.pose.pose.orientation = self.make_quat(0,1)
 
         odom2 = MagicMock()
-        odom2.pose.position.x = 0
-        odom2.pose.position.y = 0
-        odom2.pose.orientation = self.make_quat(1,1)
+        odom2.pose.pose.position.x = 0
+        odom2.pose.pose.position.y = 0
+        odom2.pose.pose.orientation = self.make_quat(1,1)
 
         self.odom.new_odom = odom2
         self.odom.old_odom = odom1
