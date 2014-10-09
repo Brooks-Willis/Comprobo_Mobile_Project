@@ -21,8 +21,29 @@ def gradient_descent(func, v):
         v_new = v_old - epsilon * G
         f_new = func(v_new)
 
+        v_new, f_new, epsilon = adapt_learning_rate(
+            v_old, v_new, f_old, f_new, epsilon
+        )
+
+        print("hello " + str(epsilon))
+
     return v_new
 
 
-def make_column_vector(v):
-    return v.reshape(v.shape[0], -1)
+def make_column_vector(vector):
+    if not_one_dimensional(vector):
+        raise Exception
+
+    return vector.reshape(max(vector.shape), 1)
+
+
+def not_one_dimensional(vector):
+    return (1 not in vector.shape) or (len(vector.shape) != 2)
+
+
+def adapt_learning_rate(v_old, v_new, f_old, f_new, epsilon):
+    print "adapt_learning_rate: " + str(v_old)
+    if f_new > f_old:
+        return v_old, f_old, epsilon * 0.2
+    else:
+        return v_new, f_new, epsilon * 1.2
