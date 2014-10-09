@@ -2,6 +2,7 @@
 
 import rospy
 import numpy as np
+import tf
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
@@ -33,25 +34,19 @@ class Odom(object):
         self.new_odom = None
         self.deltas = np.array([[0], [0], [0]])  # dx, dy, dtheta
 
-    def quat_distance(self, new_quat, old_quat):
-        sign = np.sign(new_quat.z - old_quat.z)
-        new_quat = np.array([new_quat.x, new_quat.y, new_quat.z, new_quat.w])
-        old_quat = np.array([old_quat.x, old_quat.y, old_quat.z, old_quat.w])
-        dtheta = np.arccos(2 * np.dot(new_quat.T, old_quat) - 1)
-        return sign * np.degrees(dtheta)
-
-    def odom_received(self, data):
-        self.old_odom = self.new_odom
-        self.new_odom = data
-        self.deltas[(0, 0)] = (
-            self.new_odom.pose.position.x - self.old_odom.pose.position.x
-        )
-        self.deltas[(1, 0)] = (
-            self.new_odom.pose.position.y - self.old_odom.pose.position.y
-        )
-        new_quat = self.new_odom.pose.orientation
-        old_quat = self.old_odom.pose.orientation
-        self.deltas[(2, 0)] = self.quat_distance(new_quat, old_quat)
+	def odom_received(self, data):
+		self.old_odom = self.new_odom
+		self.new_odom = data
+		if self.old_odom != None:
+			self.deltas[(0,0)] = (
+                self.new_odom.pose.position.x - self.old_odom.pose.position.x
+            )
+			self.deltas[(1,0)] = (
+                self.new_odom.pose.position.y - self.old_odom.pose.position.y
+            )
+			new_quat = self.new_odom.pose.orientation
+			old_quat = self.old_odom.pose.orientation
+			self.deltas[(2,0)] = new_quat.angle(old_quat)
 
     def get_deltas(self):
         return np.array(self.deltas)

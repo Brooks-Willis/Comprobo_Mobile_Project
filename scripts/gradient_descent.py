@@ -25,8 +25,6 @@ def gradient_descent(func, v):
             v_old, v_new, f_old, f_new, epsilon
         )
 
-        print("hello " + str(epsilon))
-
     return v_new
 
 
@@ -42,7 +40,6 @@ def not_one_dimensional(vector):
 
 
 def adapt_learning_rate(v_old, v_new, f_old, f_new, epsilon):
-    print "adapt_learning_rate: " + str(v_old)
     if f_new > f_old:
         return v_old, f_old, epsilon * 0.2
     else:

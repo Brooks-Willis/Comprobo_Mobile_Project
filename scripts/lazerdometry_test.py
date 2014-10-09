@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import tf
 from lazerdometry import Lazer, Odom
 from mock import MagicMock
 from geometry_msgs.msg import Quaternion
@@ -46,13 +47,40 @@ class TestOdom(unittest.TestCase):
     def setUp(self):
         self.odom = Odom()
 
-    def make_quat(self, z, w):
-        q = np.array([z, w])
-        q = q / np.linalg.norm(q)
+	def make_quat(self, z, w):
+		q = np.array([z, w])
+		q = q/np.linalg.norm(q)
 
-        quat = Quaternion(x=0, y=0, z=q[0], w=q[1])
+		quat = Quaternion(x=0, y=0, z=q[0], w=q[1])
 
-        return quat
+		return quat
+
+	def test_quat_distance(self):
+		odom1 = MagicMock()
+		odom1.pose.position.x.return_value = 0
+		odom1.pose.position.y.return_value = 0
+		odom1.pose.orientation.x.return_value = self.make_quat(0,1)
+
+		odom2 = MagicMock()
+		odom2.pose.position.x.return_value = 0
+		odom2.pose.position.y.return_value = 0
+		odom2.pose.orientation.x.return_value = self.make_quat(1,1)
+
+		self.odom.odom_received(odom1)
+
+		self.assertEqual(self.odom.old_odom,None)
+		self.assertEqual(self.odom.new_odom,odom1)
+		self.assertTrue(np.array_equal(self.odom.deltas,np.array([[0],[0],[0]])))
+
+		self.odom.odom_received(odom2)
+
+		self.assertEqual(self.odom.old_odom,odom1)
+		self.assertEqual(self.odom.new_odom,odom2)
+		temp = self.odom.old_odom.pose.position.x
+		print temp
+		print self.odom.new_odom.pose.position.x
+		print self.odom.deltas
+		self.assertTrue(np.array_equal(self.odom.deltas,np.array([[0],[0],[90]])))
 
     def test_quat_distance(self):
         q1 = self.make_quat(0, 1)
