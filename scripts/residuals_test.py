@@ -86,17 +86,17 @@ class TestInterpolation(unittest.TestCase):
     def test_residual(self):
         old = range(1, 361)
         new = range(1, 361)
-        self.assertAlmostEqual(residual(old, new, 0, 0, 0), 0)
+        self.assertAlmostEqual(residual(old, new, 0, 0, 0, 0), 0)
 
         old = range(1, 361)
         new2 = range(1, 361)
         new2 = new2[90:] + new2[:90]
-        self.assertAlmostEqual(residual(old, new2, 0, 0, 90), 0)
-        self.assertFalse(residual(old, new2, 0, 0, 0) == 0)
+        self.assertAlmostEqual(residual(old, new2, 0, 0, 90, 0), 0)
+        self.assertFalse(residual(old, new2, 0, 0, 0, 0) == 0)
 
         old = range(1, 361)
         new2[0] = 1
-        self.assertAlmostEqual(residual(old, new2, 0, 0, 90), 90 ** 2)
+        self.assertAlmostEqual(residual(old, new2, 0, 0, 90, 0), 90 ** 2)
 
 
 if __name__ == '__main__':

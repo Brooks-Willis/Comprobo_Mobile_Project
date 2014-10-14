@@ -15,22 +15,28 @@ class Lazer(object):
         self.sub = rospy.Subscriber('scan', LaserScan, self.scan_received)
         self.penultimate = None
         self.ultimate = None
+        self._intermediate = None
 
     def scan_received(self, data):
         if data.ranges == self.ultimate:
             return
-        self.penultimate = self.ultimate
+
+        if self.penultimate == None:
+            self.penultimate = self.ultimate
         self.ultimate = data.ranges
 
-    def get_old_scan(self):
-        if self.penultimate != None:
-            return list(self.penultimate)
-        return None
+    def get_scans(self):
+        old_scan = self._copy_scan(self.penultimate)
+        new_scan = self._copy_scan(self.ultimate)
 
-    def get_new_scan(self):
-        if self.ultimate != None:
-            return list(self.ultimate)
-        return None
+        self.penultimate = self.ultimate
+        return old_scan, new_scan
+
+    def _copy_scan(self, scan):
+        if scan == None:
+            return None
+        else:
+            return list(scan)
 
 
 class Odom(object):
@@ -121,13 +127,12 @@ class Lazerdom(object):
         r = rospy.Rate(5)
         while not(rospy.is_shutdown()):
 
-            old = self.lazer_sub.get_old_scan()
-            new = self.lazer_sub.get_new_scan()
+            old, new = self.lazer_sub.get_scans()
             guess_del = self.odom_sub.get_deltas()
 
             if old != None and new != None and guess_del != None:
-                res_func = lambda vect: rsd.residual(old,new,vect[0,0],vect[1,0],vect[2,0])
-
+                angle = tf.transformations.euler_from_quaternion(self.current_quat)[2]
+                res_func = lambda vect: rsd.residual(old,new,vect[0,0],vect[1,0],vect[2,0],angle)
                 actual_del = grd.gradient_descent(res_func,guess_del)
 
                 self.compute_new_pose(actual_del)

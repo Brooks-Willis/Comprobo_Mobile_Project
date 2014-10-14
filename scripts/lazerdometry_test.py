@@ -12,9 +12,9 @@ class TestLazer(unittest.TestCase):
 
     def test_scan_received(self):
         scan1 = MagicMock()
-        scan1.ranges.return_value = range(360)
+        scan1.ranges = range(360)
         scan2 = MagicMock()
-        scan2.ranges.return_value = range(1, 361)
+        scan2.ranges = range(1, 361)
 
         self.lazer.scan_received(scan1)
         self.assertEqual(self.lazer.penultimate, None)
@@ -28,19 +28,42 @@ class TestLazer(unittest.TestCase):
         self.assertEqual(self.lazer.penultimate, scan1.ranges)
         self.assertEqual(self.lazer.ultimate, scan2.ranges)
 
-    def test_get_old_scan(self):
-        range1 = range(360)
-        self.lazer.penultimate = range1
+    def test_get_scans(self):
+        scan1 = MagicMock()
+        scan1.ranges = range(360)
+        scan2 = MagicMock()
+        scan2.ranges = range(1, 361)
+        scan3 = MagicMock()
+        scan3.ranges = range(2, 362)
+        scan4 = MagicMock()
+        scan4.ranges = range(3, 363)
 
-        self.assertNotEqual(id(self.lazer.get_old_scan()), id(range1))
-        self.assertEqual(self.lazer.get_old_scan(), range1)
+        self.lazer.scan_received(scan1)
+        self.assertEqual(self.lazer.get_scans(), (None, scan1.ranges))
 
-    def test_get_new_scan(self):
-        range1 = range(360)
-        self.lazer.ultimate = range1
+        self.lazer.scan_received(scan2)
 
-        self.assertNotEqual(id(self.lazer.get_new_scan()), id(range1))
-        self.assertEqual(self.lazer.get_new_scan(), range1)
+        self.lazer.scan_received(scan3)
+        self.assertEqual(self.lazer.penultimate, scan1.ranges)
+        self.assertEqual(self.lazer.get_scans(), (scan1.ranges, scan3.ranges))
+
+        self.lazer.scan_received(scan4)
+        self.assertEqual(self.lazer.get_scans(), (scan3.ranges, scan4.ranges))
+
+
+    # def test_get_old_scan(self):
+    #     range1 = range(360)
+    #     self.lazer.penultimate = range1
+
+    #     self.assertNotEqual(id(self.lazer.get_old_scan()), id(range1))
+    #     self.assertEqual(self.lazer.get_old_scan(), range1)
+
+    # def test_get_new_scan(self):
+    #     range1 = range(360)
+    #     self.lazer.ultimate = range1
+
+    #     self.assertNotEqual(id(self.lazer.get_new_scan()), id(range1))
+    #     self.assertEqual(self.lazer.get_new_scan(), range1)
 
 
 class TestOdom(unittest.TestCase):
@@ -142,3 +165,6 @@ class TestLazerdom(unittest.TestCase):
 
         self.assertTrue(np.allclose(self.lazerdom.current_quat,self.make_quat(0,1)))
         self.assertEqual(self.lazerdom.current_pos,[2,4,0])
+
+if __name__ == '__main__':
+    unittest.main()

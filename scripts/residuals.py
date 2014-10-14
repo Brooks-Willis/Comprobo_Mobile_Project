@@ -46,8 +46,9 @@ def translate(rs_in, dx, dy, dtheta):
     return rs, thetas
 
 
-def residual(old, new, dx, dy, dtheta):
-    new_rs, new_thetas = translate(new, dx, dy, dtheta)
+def residual(old, new, dx, dy, dtheta, theta):
+    new_rs, new_thetas = translate(new, dx, dy, dtheta+theta)
+    old_rs, old_thetas = translate(old,0,0,theta)
     return computeResidual(old, new_rs, new_thetas)
 
 

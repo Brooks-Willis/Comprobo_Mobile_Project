@@ -18,7 +18,7 @@ class TestGradientDescent(unittest.TestCase):
 
     def test_gradient_descent(self):
         initial_guess = numpy.array([[3]])
-        v = gradient_descent(self.parabola, initial_guess)
+        v = gradient_descent(self.parabola, initial_guess, abs_error = 1e-10)
         x = v[0, 0]
         self.assertAlmostEqual(x, 1, delta=0.01)
 

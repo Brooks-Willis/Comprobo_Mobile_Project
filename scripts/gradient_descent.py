@@ -2,9 +2,9 @@ import numpy
 from gradient import gradient
 
 
-def gradient_descent(func, v):
-    epsilon = 0.001
-    absolute_error = 1e-10
+def gradient_descent(func, v, abs_error = 1e-5):
+    epsilon = 1e-5
+    absolute_error = abs_error
 
     v_old = numpy.array(v)
     v_old = make_column_vector(v_old)
@@ -14,17 +14,17 @@ def gradient_descent(func, v):
     f_new = f_old + absolute_error * 2
 
     while numpy.absolute(f_new - f_old) > absolute_error:
+        v_new, f_new, epsilon = adapt_learning_rate(
+            v_old, v_new, f_old, f_new, epsilon
+        )
+
         v_old = v_new
         f_old = f_new
 
         G = gradient(func, v_old)
         v_new = v_old - epsilon * G
         f_new = func(v_new)
-
-        v_new, f_new, epsilon = adapt_learning_rate(
-            v_old, v_new, f_old, f_new, epsilon
-        )
-
+        
     return v_new
 
 
